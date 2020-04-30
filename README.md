@@ -9,3 +9,6 @@ It was built using a GeoJSON file with the state borders, a 3rd party script for
 ## Resources Used
 - [d3-geo](https://github.com/d3/d3-geo) - Used for reading the GeoJSON file and check if point is inside the polygon created by it.
 - [Exploratory Brazil States](https://exploratory.io/map) - The GeoJSON file was originated from the main state files provided by Exploratory.
+
+## Usage
+- Just download, unzip and open the geolocation.html file in your browser.
