@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta charset="utf-8">
+    <title>GPS Position Checker</title>
+    <meta name="description"
+        content="This script will check your current GPS coordinates and check if you are inside a region defined by a GeoJSON file.">
+    <script src="d3-geo.min.js"></script>
+    <script src="mg.min.geojson"></script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <h1>Am I in?</h1>
+        <button id="check">Check</button>
+        <div id="result" style=""></div>
+
+        <h1>Is this coordinate in?</h1>
+        <form>
+            <label for="latitude">Latitude</label>
+            <input type="text" required id="latitude">
+            <label for="longitude">Longitude</label>
+            <input type="text" required id="longitude">
+            <button id="check-b">Check</button>
+        </form>
+        <div id="result-b" style="background: #eee;padding: 20px;margin: 20px 0;"></div>
+
+        Samples:
+        <ul>
+            <li><a href="#" class="sample" data-id="-18.4947985,-49.4827652">Border GO/MG - Cachoeira Dourada</a></li>
+            <li><a href="#" class="sample" data-id="-18.5172858,-49.5050193">Border MG/GO - Cachoeria Dourada</a></li>
+            <li><a href="#" class="sample" data-id="-21.8939218,-42.7082709">Border RJ/MG - Jamapará</a></li>
+            <li><a href="#" class="sample" data-id="-21.885523,-42.7015277">Border MG/RJ - Além Paraíba</a></li>
+            <li><a href="#" class="sample" data-id="-19.9027026,-44.0340896">Capital of MG - Belo Horizonte</a></li>
+            <li><a href="#" class="sample" data-id="-15.799068,-47.8719137">Capital of Brazil - Brasília</a></li>
+        </ul>
+    </div>
+    <script>
+        var resultMe = document.getElementById('result'),
+            resultPoint = document.getElementById('result-b'),
+            latitude = 0,
+            longitude = 0;
+
+        function inMinas() {
+            if (d3.geoContains(mgGeoJSON, [longitude, latitude])) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        document.getElementById('check').onclick = function (e) {
+            e.preventDefault();
+
+            if (!navigator.geolocation) {
+                resultMe.innerHTML = 'This browser does not supports Geolocation.';
+            } else {
+                resultMe.innerHTML = 'Checking your position...';
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    latitude = position.coords.latitude;
+                    longitude = position.coords.longitude;
+
+                    if (inMinas()) {
+                        resultMe.innerHTML = '<span class="success">Yes!</span>';
+                    } else {
+                        resultMe.innerHTML = '<span class="fail">No!</span>';
+                    }
+
+                    resultMe.innerHTML += '<br />Your coords: ' + latitude + ',' + longitude;
+                    resultMe.innerHTML +=
+                        '<br /><a target="map" href="https://www.google.com/maps/@?zoom=10&map_action=map&api=1&center=' +
+                        latitude + ',' +
+                        longitude + '"> Check on Google Maps.</a>';
+
+                }, function (reason) {
+                    if (reason == 1 || reason.code == 1) {
+                        resultMe.innerHTML = '<span class="fail">Error!</span>';
+                        resultMe.innerHTML +=
+                            '<br />You must authorize the sharing of your position. Please try again.';
+                    } else {
+                        resultMe.innerHTML = '<span class="fail">Error!</span>';
+                        resultMe.innerHTML +=
+                            '<br />Your device could not retrieve your position. Please try again.';
+                    }
+                    resultMe.innerHTML +=
+                        '<br />You may also try the manual position checker below.';
+                });
+            }
+        }
+
+        document.getElementById('check-b').onclick = function (e) {
+            e.preventDefault();
+
+            latitude = document.getElementById('latitude').value;
+            longitude = document.getElementById('longitude').value;
+
+            if (inMinas()) {
+                resultPoint.innerHTML = '<span class="success">Yes!</span>';
+            } else {
+                resultPoint.innerHTML = '<span class="fail">No!</span>';
+            }
+
+            resultPoint.innerHTML += '<br />Coords: ' + latitude + ',' + longitude;
+            resultPoint.innerHTML +=
+                '<br /><a target="map" href="https://www.google.com/maps/@?zoom=10&map_action=map&api=1&center=' +
+                latitude +
+                ',' +
+                longitude + '"> Check on Google Maps.</a>';
+        }
+
+        for (const button of document.querySelectorAll('.sample')) {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                var latlng = this.getAttribute('data-id');
+                latlng = latlng.split(',');
+                document.getElementById('latitude').value = latlng[0];
+                document.getElementById('longitude').value = latlng[1];
+            });
+        }
+    </script>
+    <style>
+        #result,
+        #result-b {
+            background: #eee;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .fail {
+            display: inline-block;
+            background: #fbcfcf;
+            padding: 10px 20px;
+            color: #ce0e0e;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .success {
+            display: inline-block;
+            background: #d7efd6;
+            padding: 10px 20px;
+            color: #1c8018;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+    </style>
+</body>
+
+</html>
